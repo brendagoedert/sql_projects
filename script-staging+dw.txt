@@ -1,0 +1,123 @@
+----------------------------------------------
+-- Criação do banco de dados Staging Area --
+----------------------------------------------
+
+CREATE  DATABASE staging_aula;
+use staging_aula;
+
+CREATE TABLE staging_aula.tbvendedor as
+select *
+	from erp_aula.tbvendedor;
+
+
+CREATE TABLE staging_aula.tbvendas as
+select *
+	from erp_aula.tbvendas;
+
+
+CREATE TABLE staging_aula.tbdependente as
+select *
+	from erp_aula.tbdependente;
+
+
+CREATE TABLE staging_aula.tbproduto as
+select *
+	from erp_aula.tbproduto;
+
+
+----------------------------------------------
+-- Criação do banco de dados Data Warehouse --
+----------------------------------------------
+
+CREATE DATABASE datawarehouse_aula;
+use datawarehouse_aula;
+
+--- criar tabela vendedor
+
+CREATE OR REPLACE VIEW datawarehouse_aula.dim_vendedor as
+
+SELECT cdvdd as cod_vendedor
+	nmvdd as nome_vendedor
+	sxvdd as sexo_vendedor
+	perccomissao as percentual_comissao
+FROM staging_aula.tbvendedor;
+
+--- criar tabela dependente
+
+CREATE OR REPLACE VIEW datawarehouse_aula.dim_dependente as
+SELECT cddep as cod_dependente
+	nmdep as nome_dependente
+	dtnasc as data_nascimento
+	scdep as sexo_dependente
+	matfunc as cod_vendedor
+FROM staging_aula.tbdependente;
+
+--- criar tabela produto
+CREATE OR REPLACE VIEW datawarehouse_aula.dim_produto as
+
+SELECT DISTINCT
+	cdpro as cod_produto
+	qtdpro as quantidade_estoque
+	status as status
+FROM staging_aula.tbestoqueproduto;
+AND
+SELECT  DISTINCT
+	NmPro as descricao_produto
+	TpPro as tipo_produto
+	Und as unidade_de_medida
+
+FROM staging_aula.tbvendas;
+
+GROUP BY 1
+ORDER BY 1 desc
+
+---
+
+
+CREATE OR REPLACE VIEW datawarehouse_aula.dim_canalvendas as
+
+SELECT  DISTINCT
+	CdCanalVendas as cod_canalvendas
+	NmCanalVendas as descricao_canalvendas
+
+FROM staging_aula.tbvendas;
+
+---
+CREATE OR REPLACE VIEW datawarehouse_aula.dim_cliente as
+
+SELECT  DISTINCT
+	CdCli as cod_cliente
+	NmCli as nome_cliente
+	Cidade as cidade_cliente
+	Estado as estado_cliente
+	Pais as pais_cliente
+
+FROM staging_aula.tbvendas;
+
+-----
+
+CREATE OR REPLACE VIEW datawarehouse_aula.fato_vendas as
+
+SELECT 
+	cdven as id_vendas 
+	dtven as data_venda
+	cdcli as cod_cliente
+	cdpro as cod_produto
+	cdvdd as cod_vendedor
+	qtd as qtd_vendida
+	vrunt as valor_unitario
+	matfunc as cod_vendedor
+	CdCanalVendas as cod_canalvendas
+	status as status_venda
+	CdVen as id_venda
+	DtVen as data_venda
+	deletado as venda_excluida  
+FROM  staging_aula.tbvendas;
+
+
+
+
+
+
+
+
